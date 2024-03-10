@@ -1,5 +1,8 @@
 *.EFI
+*.bin
 *.efi
 *.elf
+*.d
 *.img
+*.out
 *.o

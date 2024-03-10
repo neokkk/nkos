@@ -1,6 +1,13 @@
 #include <cstdint>
-#include <new>
+#include <cstddef>
+#include <cstdio>
 #include "frame_buffer_config.h"
+#include "graphics.h"
+#include "font.h"
+
+void* operator new(std::size_t size, void *buf) {
+  return buf;
+}
 
 void operator delete(void *obj) noexcept {}
 
@@ -28,6 +35,18 @@ extern "C" void KernelMain(const FrameBufferConfig &frame_buffer_config) {
 			pixel_writer->Write(x, y, {0, 255, 0}); // green
 		}
 	}
+
+	int i = 0;
+	for (char c = '!'; c < '~'; ++c) {
+		WriteAscii(*pixel_writer, 8 * i, 50, c, {0, 0, 0});
+		++i;
+	}
+
+	WriteString(*pixel_writer, 0, 66, "Hello, world!", {0, 0, 0});
+
+	char buf[128];
+	sprintf(buf, "1 + 2 = %d", 1 + 2);
+	WriteString(*pixel_writer, 0, 82, buf, {0, 0, 0});
 
 	while (1) __asm__("hlt");
 }

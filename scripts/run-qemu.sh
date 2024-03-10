@@ -12,7 +12,8 @@ if ! which qemu-img >/dev/null 2>&1; then
   exit
 fi
 
-root=$(dirname $(dirname "$0"))
+root=$(dirname $(dirname $(realpath "$0")))
+echo "root: $root"
 kernel_dir="$root/kernel"
 
 img_name="$kernel_dir/$1"
@@ -47,7 +48,10 @@ fi
 sudo cp $efi_file "$kernel_dir/kernel.elf" "$boot_dir/"
 ls $boot_dir
 
+sleep 0.5
+
 sudo umount $mount_point
+rm -r $mount_point
 
 qemu-system-x86_64 \
   -drive if=pflash,file="$kernel_dir/OVMF_CODE.fd" \
