@@ -1,11 +1,12 @@
 #include "console.h"
+#include "font.h"
 
 void Console::PutString(const char *s) {
   while (*s) {
     if (*s == '\n') {
       NewLine();
     } else if (cursor_column_ < kColumns - 1) {
-      writer_.WriteAscii(cursor_column_ * 8, cursor_row_ * 16, *s, fg_color_);
+      WriteAscii(writer_, cursor_column_ * 8, cursor_row_ * 16, *s, fg_color_);
       buffer_[cursor_row_][cursor_column_] = *s;
       ++cursor_column_;
     }
@@ -28,7 +29,7 @@ void Console::NewLine() {
     for (int row = 0; row < kRows - 1; ++row) {
       memcpy(buffer_[row], buffer_[row + 1], kColumns + 1);
       for (int col = 0; col < kColumns; ++col) {
-        writer_.WriteAscii(8 * col, 16 * row, buffer_[row][col], fg_color_);
+        WriteAscii(writer_, 8 * col, 16 * row, buffer_[row][col], fg_color_);
       }
     }
     
