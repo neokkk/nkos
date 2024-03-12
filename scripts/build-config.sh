@@ -4,18 +4,15 @@ set -ex
 
 ARCH=$(uname -m)
 
-CC=clang
-CXX=clang++
-
-COMMON_CFLAGS="-nostdlibinc -O2 -D__ELF__ -D_LDBL_EQ_DBL -D_GNU_SOURCE -D_POSIX_TIMERS -I$PREFIX/include"
-COMMON_CXXFLAGS="-I/usr/include -I/usr/include/c++/11 -I/usr/include/$ARCH-linux-gnu -I/usr/include/$ARCH-linux-gnu/c++/11
--I/usr/include -I/usr/include/c++/11 -I/usr/include/$ARCH-linux-gnu -I/usr/include/$ARCH-linux-gnu/c++/11"
-
 BASE_DIR=/usr/local/src
 PREFIX=/usr/local/$ARCH-elf
 TARGET_TRIPLE=$ARCH-elf
 
-# Install binutils
+CC=/usr/bin/clang
+CXX=/usr/bin/clang++
+
+COMMON_CFLAGS="-nostdlibinc -O2 -D__ELF__ -D_LDBL_EQ_DBL -D_GNU_SOURCE -D_POSIX_TIMERS -I$PREFIX/include"
+COMMON_CXXFLAGS="-lpthread -I/usr/include -I/usr/include/c++/11 -I/usr/include/$ARCH-linux-gnu -I/usr/include/$ARCH-linux-gnu/c++/11 -I/usr/include/llvm-14/llvm/Support -I/usr/include/llvm-18/llvm/Support -I$BASE_DIR/llvm-project/libcxx/include"
 
 cd $BASE_DIR
 git clone --depth 1 --branch fix-build https://github.com/uchan-nos/newlib-cygwin.git
@@ -40,30 +37,34 @@ cd $BASE_DIR
 mkdir -p build_libcxxabi
 cd build_libcxxabi
 
-cmake -G "Unix Makefiles" \
+cmake -S llvm -G Ninja "Unix Makefiles" \
+  -DCMAKE_PROJECT_NAME=libcxxabi \
   -DCMAKE_INSTALL_PREFIX=$PREFIX \
   -DCMAKE_CXX_COMPILER=$CXX \
   -DCMAKE_CXX_FLAGS="$COMMON_CFLAGS $COMMON_CXXFLAGS -D_LIBCPP_HAS_NO_THREADS" \
   -DCMAKE_C_COMPILER=$CC \
   -DCMAKE_C_FLAGS="$COMMON_CFLAGS -D_LIBCPP_HAS_NO_THREADS" \
   -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+  -DCMAKE_UILD_TYPE=RelWithDebInfo \
   -DCMAKE_BUILD_TYPE=Release \
   -DLIBCXXABI_LIBCXX_INCLUDES="$BASE_DIR/llvm-project/libcxx/include" \
   -DLIBCXXABI_ENABLE_EXCEPTIONS=False \
+  -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
   -DLIBCXXABI_ENABLE_THREADS=False \
   -DLIBCXXABI_TARGET_TRIPLE=$TARGET_TRIPLE \
   -DLIBCXXABI_ENABLE_SHARED=False \
   -DLIBCXXABI_ENABLE_STATIC=True \
   -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
+  -DLIBCXX_HARDENING_MODE=none \
   $BASE_DIR/llvm-project/libcxxabi
 
-make -j4
-make install
+cmake --build . --target install
 
 cd $BASE_DIR
 mkdir build_libcxx
 
-cmake -G "Unix Makefiles" \
+cmake -S llvm -G Ninja "Unix Makefiles" \
+  -DCMAKE_PROJECT_NAME=libcxx \
   -DCMAKE_INSTALL_PREFIX=$PREFIX \
   -DCMAKE_CXX_COMPILER=$CXX \
   -DCMAKE_CXX_FLAGS="$COMMON_CFLAGS $COMMON_CXXFLAGS" \
@@ -72,6 +73,7 @@ cmake -G "Unix Makefiles" \
   -DCMAKE_C_FLAGS="$COMMON_CFLAGS" \
   -DCMAKE_C_COMPILER_TARGET=$TARGET_TRIPLE \
   -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+  -DCMAKE_UILD_TYPE=RelWithDebInfo \
   -DCMAKE_BUILD_TYPE=Release \
   -DLIBCXX_CXX_ABI=libcxxabi \
   -DLIBCXX_CXX_ABI_INCLUDE_PATHS="$BASE_DIR/llvm-project/libcxxabi/include" \
@@ -85,8 +87,7 @@ cmake -G "Unix Makefiles" \
   -DLIBCXX_ENABLE_STATIC=True \
   $BASE_DIR/llvm-project/libcxx
 
-make -j4
-make install
+cmake --build . --target install
 
 cd $BASE_DIR
 wget https://download.savannah.gnu.org/releases/freetype/freetype-2.10.1.tar.gz

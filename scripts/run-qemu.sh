@@ -51,7 +51,7 @@ ls $boot_dir
 sleep 0.5
 
 sudo umount $mount_point
-rm -r $mount_point
+# rm -r $mount_point
 
 qemu-system-x86_64 \
   -drive if=pflash,file="$kernel_dir/OVMF_CODE.fd" \
