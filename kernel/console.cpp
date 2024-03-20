@@ -1,3 +1,4 @@
+#include <cstring>
 #include "console.h"
 #include "font.h"
 

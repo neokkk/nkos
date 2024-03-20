@@ -49,7 +49,8 @@ EFI_STATUS GetMemoryMap(struct MemoryMap *map)
 	);
 }
 
-const CHAR16* GetMemoryTypeUnicode(EFI_MEMORY_TYPE type) {
+const CHAR16* GetMemoryTypeUnicode(EFI_MEMORY_TYPE type)
+{
   switch (type) {
     case EfiReservedMemoryType: return L"EfiReservedMemoryType";
     case EfiLoaderCode: return L"EfiLoaderCode";
@@ -189,7 +190,8 @@ const CHAR16 *GetPixelFormatUnicode(EFI_GRAPHICS_PIXEL_FORMAT fmt)
   }
 }
 
-void Halt(void) {
+void Halt(void)
+{
 	while (1) __asm__("hlt");
 }
 
