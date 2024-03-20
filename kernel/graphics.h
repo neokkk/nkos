@@ -36,4 +36,19 @@ public:
 
 	virtual void Write(int x, int y, const PixelColor &c) override;
 };
+
+template <typename T>
+struct Vector2D {
+	T x, y;
+
+	Vector2D<T> &operator+=(const Vector2D<T> &rhs) {
+		x += rhs.x;
+		y += rhs.y;
+		return *this;
+	}
+};
+
+void FillRect(PixelWriter &writer, const Vector2D<int> &pos, const Vector2D<int> &size, const PixelColor &c);
+
+void DrawRect(PixelWriter &writer, const Vector2D<int> &pos, const Vector2D<int> &size, const PixelColor &c);
 #endif
